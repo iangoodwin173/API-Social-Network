@@ -90,7 +90,31 @@ const thoughtController = {
            res.json(dbThoughtData);
           }).catch(err => res.json(err));
           
-      }
+      },
+
+      deleteThought({ params }, res) {
+        Thought.findOneAndDelete({ _id: params.id })
+          .then((dbThoughtData) => {
+            if (!dbThoughtData) {
+              return res.status(404).json({ message: "There is no thought with this ID." });
+            }
+    
+            return User.findOneAndUpdate(
+              { thoughts: params.id },
+              { $pull: { thoughts: params.id } }, 
+              { new: true }
+            );
+          })
+          .then((dbUserData) => {
+            if (!dbUserData) {
+              return res
+                .status(404)
+                .json({ message: "There is no user with this ID. Your thought is in the void."});
+            }
+            res.json({ message: "Thought deleted." });
+          })
+          .catch((err) => res.json(err));
+      },
 
       
     };
